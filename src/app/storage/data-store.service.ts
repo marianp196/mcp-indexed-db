@@ -29,7 +29,7 @@ export class DataStoreService {
   public async create(id: string, obj: any) {
     return new Promise((resolve, error) => {
       const request = this.objectStore.add(obj, id);
-      request.onsuccess = resolve;      
+      request.onsuccess = e => resolve();      
       request.onerror = (e: any) => this.handleError(e, error);
     });
   }
@@ -37,7 +37,7 @@ export class DataStoreService {
   public async update(id: string, obj: any) {
     return new Promise((resolve, error) => {
       const request = this.objectStore.put(obj, id);
-      request.onsuccess = resolve;      
+      request.onsuccess = e => resolve();      
       request.onerror = (e: any) => this.handleError(e, error);
     });
   }
@@ -45,7 +45,7 @@ export class DataStoreService {
   public async remove(id: string) {
     return new Promise((resolve, error) => {
       const request = this.objectStore.delete(id);
-      request.onsuccess = resolve;      
+      request.onsuccess = e => resolve();      
       request.onerror = (e: any) => this.handleError(e, error);
     });
   }

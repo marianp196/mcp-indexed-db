@@ -20,12 +20,14 @@ export class AppComponent implements OnInit {
 
     await this.db.openDatabaseAndUpdate();
     const store = this.db.getStore('hurensohn');
-    console.log(await store.create('zwei', {hallo: 'otto'}));
-    console.log(await store.getById('zwei'));
-    console.log(await store.update('zwei', {hallo: 'manni'}));
-    console.log(await store.exists('zwei'));
-    console.log(await store.remove('zwei'));
-    console.log(await store.exists('zwei'));
+
+    const id = 'och jo';
+    console.log(await store.create(id, {hallo: 'otto'}));
+    console.log(await store.getById(id));
+    console.log(await store.update(id, {hallo: 'manni'}));
+    console.log(await store.exists(id));
+    console.log(await store.remove(id));
+    console.log(await store.exists(id));
     
   }
 }

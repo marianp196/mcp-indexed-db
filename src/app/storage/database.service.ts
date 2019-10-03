@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DatabaseSchema } from '../schema/databaseSchema.model';
+import { DatabaseSchema } from './schema/databaseSchema.model';
 import * as _ from 'lodash';
 import { DataStoreService } from './data-store.service';
 
