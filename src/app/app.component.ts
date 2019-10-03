@@ -12,20 +12,20 @@ export class AppComponent implements OnInit {
   constructor(private db: DatabaseService){}
 
   async ngOnInit() {
-    console.log('init');
-    await this.db.openDatabase({
-      dbName: 'laueft',
-      versions: [
-        {version: 1, tables: ['eins', 'zwei', 'drei']},
-        //{version: 2, tables: ['drei']}
-      ]
-    });
-    console.log('after open db');
+    this.db.schema = {
+      dbName: 'neueDatenbank',
+      currentVersion: 14,
+      tables: [{name: 'hurensohn'}, {name: 'spasti'}, {name: 'naja'}]
+    };
 
-    //const store = this.db.getStore('eins');
-    /*await store.create('id', {hi: 'huhu'});
-    console.log('after create');
-    console.log(await store.getById('id'));
-    console.log(await store.getAll());*/
+    await this.db.openDatabaseAndUpdate();
+    const store = this.db.getStore('hurensohn');
+    console.log(await store.create('zwei', {hallo: 'otto'}));
+    console.log(await store.getById('zwei'));
+    console.log(await store.update('zwei', {hallo: 'manni'}));
+    console.log(await store.exists('zwei'));
+    console.log(await store.remove('zwei'));
+    console.log(await store.exists('zwei'));
+    
   }
 }

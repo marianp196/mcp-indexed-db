@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { NgxIndexedDB } from 'ngx-indexed-db';
-import { DatabaseSchema } from './databaseSchema';
+import { DatabaseSchema } from '../schema/databaseSchema.model';
+import * as _ from 'lodash';
 import { DataStoreService } from './data-store.service';
 
 @Injectable({
@@ -9,51 +9,52 @@ import { DataStoreService } from './data-store.service';
 export class DatabaseService {
 
   constructor() { }
+  
+  public schema: DatabaseSchema;
+  private db: IDBDatabase;
 
-  private db;
+  public async openDatabaseAndUpdate() {
+    this.db = await this.getDatabase(false);
+  }
 
   public getStore(storeName: string) {
     if (!this.db) {
-      throw new Error('db not opened');
+      throw new Error('You need to open Database! Call openDatabaseAndUpdate()');
     }
-    return new DataStoreService(this.db, storeName);
+    const trans = this.db.transaction([storeName], "readwrite");
+    return new DataStoreService(trans.objectStore(storeName));
   }
 
-  public async openDatabase(dbSchema: DatabaseSchema) {
-    const version = dbSchema.versions[dbSchema.versions.length - 1].version;
-    //await this.execute(new NgxIndexedDB(dbSchema.dbName, version), dbSchema);
-    const x = new NgxIndexedDB(dbSchema.dbName, version);
-    this.db = await x.openDatabase(dbSchema.versions[0].version, evt => {
-      const creator = evt.currentTarget.result;
-      dbSchema.versions[0].tables.forEach(table => {
-        creator.createObjectStore(table, { keyPath: 'id' });
-      });
-    });
-    console.log(this.db);
-  }
-
-  /*private async execute(dbService, dbSchema: DatabaseSchema) {
-    for (const version of dbSchema.versions) {
-      await this.createVersion(dbService, version);
+  private getDatabase(updateSchema?: boolean): Promise<IDBDatabase> {
+    if (!this.schema) {
+      throw new Error('no schema set');
     }
-  }*/
 
-  /*private async createVersion(dbService, version: {version: number, tables: string[]}): Promise<any> {
     return new Promise((resolve, error) => {
-      try {
-        this.db = dbService.openDatabase(version.version, evt => {
-          const creator = evt.currentTarget.result;
-          version.tables.forEach(table => {
-            creator.createObjectStore(table, { keyPath: 'id' });
-          });
-        });
-        console.log(this.db);
-        resolve();
-      } catch (err) {
-        error(err);
+      const request = this.windowDb.open(this.schema.dbName, this.schema.currentVersion);
+      if (updateSchema) {
+        request.onupgradeneeded = this.onUpgradeNeeded.bind(this);
       }
-    });
-  }*/
 
+      request.onsuccess = (s: any) => {
+        resolve(s.target.result);
+      };
+      request.onerror = e => error(e);
+    })
+  }
 
+  private onUpgradeNeeded(event) {
+    const db = event.target.result as IDBDatabase;
+    const currentTables = db.objectStoreNames;
+
+    for(const table of this.schema.tables) {
+      if (!currentTables.contains(table.name)) {
+        db.createObjectStore(table.name);
+      }
+    }
+  }
+
+  private get windowDb() {
+    return window.indexedDB;
+  }
 }
